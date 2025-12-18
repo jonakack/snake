@@ -5,6 +5,8 @@
 int main()
 {
     Game game;
+
+    game.menuLoop();
     
     game.gameLoop();
 
