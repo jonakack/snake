@@ -5,10 +5,8 @@
 int main()
 {
     Game game;
-
-    game.menuLoop();
     
-    game.gameLoop();
-
+    game.run();
+    
     return 0;
 }

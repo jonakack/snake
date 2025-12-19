@@ -12,7 +12,7 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main 
+add_executable(main
     src/game.cpp
     src/main.cpp
     src/player.cpp)

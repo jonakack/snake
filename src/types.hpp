@@ -7,3 +7,13 @@ enum class moveDirection
     Left,
     Right
 };
+
+enum class GameState
+{
+    MENU,
+    USERNAME_INPUT,
+    PLAYING,
+    PAUSED,
+    GAME_OVER,
+    QUIT
+};
