@@ -18,3 +18,22 @@ add_executable(main
     src/player.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics SFML::Audio)
+
+# Add Windows icon resource
+if (WIN32)
+    target_sources(main PRIVATE ${CMAKE_SOURCE_DIR}/resource.rc)
+endif()
+
+# Copy resource folders (fonts, soundfx, textures) to output directory after build
+add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/fonts $<TARGET_FILE_DIR:main>/fonts
+)
+add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/soundfx $<TARGET_FILE_DIR:main>/soundfx
+)
+add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/textures $<TARGET_FILE_DIR:main>/textures
+)
