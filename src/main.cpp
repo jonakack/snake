@@ -1,3 +1,6 @@
+#include <filesystem>
+#include <windows.h>
+
 #include <SFML/Graphics.hpp>
 
 #include "game.hpp"

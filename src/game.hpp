@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <vector>
 #include <string>
 #include <fstream>
 
@@ -12,7 +13,7 @@
 #define MAX_FPS 120
 #define RESOLUTION_WIDTH 1920u
 #define RESOLUTION_HEIGHT 1080u
-#define FONT "../../fonts/ARCADECLASSIC.TTF"
+#define FONT "fonts/ARCADECLASSIC.TTF"
 
 class Button;
 

@@ -6,68 +6,72 @@
 sf::Font g_font(FONT);
 
 Game::Game()
-    : window(sf::RenderWindow(sf::VideoMode({RESOLUTION_WIDTH, RESOLUTION_HEIGHT}), "Snake")), // Add "sf::State::Fullscreen" for fullscren mode
+    : window(sf::RenderWindow(sf::VideoMode({RESOLUTION_WIDTH, RESOLUTION_HEIGHT}), "Snake", sf::State::Fullscreen)), // Add/remove "sf::State::Fullscreen" for fullscren mode
       currentState(GameState::MENU),
       nextState(GameState::MENU),
       stateChanged(false),
       direction(moveDirection::Right),
-      font(FONT),
-      menuBackgroundTexture("../../textures/mountain/fullmountain.png"),
-      menuBackgroundSprite(menuBackgroundTexture),
-      gameBackgroundTexture("../../textures/greenpixels.jpg"),
-      gameBackgroundSprite(gameBackgroundTexture),
+    font(FONT),
+    menuBackgroundTexture("textures/mountain/fullmountain.png"),
+    menuBackgroundSprite(menuBackgroundTexture),
+    gameBackgroundTexture("textures/greenpixels.jpg"),
+    gameBackgroundSprite(gameBackgroundTexture),
       gameOverText(font, "Game Over!", 80),
       scoreText(font),
       instructionText(font, "Press   R   to   Restart   or   M   for   Menu", 40)
 {
+    sf::Image icon;
+    if (icon.loadFromFile("textures/snake.png"))
+        window.setIcon(icon);
+
     window.setFramerateLimit(MAX_FPS);
-    
+
     // Initialize UI elements
     startButton = new Button({400.0f, 100.0f}, "Start");
     startButton->setOrigin({startButton->getSize().x / 2, startButton->getSize().y / 2});
     startButton->setPosition({RESOLUTION_WIDTH / 2, 500.0f});
     startButton->updateText();
-    
+
     exitButton = new Button({400.0f, 100.0f}, "Exit Game");
     exitButton->setOrigin({exitButton->getSize().x / 2, exitButton->getSize().y / 2});
     exitButton->setPosition({RESOLUTION_WIDTH / 2, 600.0f});
     exitButton->updateText();
-    
+
     restartButton = new Button({400.0f, 100.0f}, "Restart");
     restartButton->setOrigin({restartButton->getSize().x / 2, restartButton->getSize().y / 2});
     restartButton->setPosition({RESOLUTION_WIDTH / 2, 550.0f});
     restartButton->updateText();
-    
+
     menuButton = new Button({400.0f, 100.0f}, "Main Menu");
     menuButton->setOrigin({menuButton->getSize().x / 2, menuButton->getSize().y / 2});
     menuButton->setPosition({RESOLUTION_WIDTH / 2, 650.0f});
     menuButton->updateText();
-    
+
     resumeButton = new Button({400.0f, 100.0f}, "Resume");
     resumeButton->setOrigin({resumeButton->getSize().x / 2, resumeButton->getSize().y / 2});
     resumeButton->setPosition({RESOLUTION_WIDTH / 2, 400.0f});
     resumeButton->updateText();
-    
+
     // Position text elements
     gameOverText.setPosition({RESOLUTION_WIDTH / 2 - 200, 200});
     instructionText.setPosition({RESOLUTION_WIDTH / 2 - 400, 700});
     instructionText.setOutlineThickness(2);
     instructionText.setOutlineColor(sf::Color::Black);
-    
+
     // Set up background sprites
     sf::Vector2u menuTextureSize = menuBackgroundTexture.getSize();
     menuBackgroundSprite.setScale({static_cast<float>(RESOLUTION_WIDTH) / menuTextureSize.x, static_cast<float>(RESOLUTION_HEIGHT) / menuTextureSize.y});
-    
+
     sf::Vector2u gameTextureSize = gameBackgroundTexture.getSize();
     gameBackgroundSprite.setScale({static_cast<float>(RESOLUTION_WIDTH) / gameTextureSize.x, static_cast<float>(RESOLUTION_HEIGHT) / gameTextureSize.y});
-    
+
     // Initialize username and high score system
     currentUsername = "";
     inputUsername = "";
     highScore = 0;
     highScoreUsername = "Unknown";
     isNewHighScore = false;
-    
+
     loadHighScore();
 }
 
@@ -83,29 +87,34 @@ Button::Button(sf::Vector2f size, std::string buttonText)
     setFillColor(normalColor);
     setOutlineThickness(3.0f);
     setOutlineColor(borderColor);
-    
+
     text.setFillColor(textColor);
     text.setOutlineThickness(1.0f);
     text.setOutlineColor(sf::Color::Black);
-    
+
     updateText();
 }
 
-void Button::draw(sf::RenderWindow& window)
+void Button::draw(sf::RenderWindow &window)
 {
-    window.draw(*this);  
-    window.draw(text);   
+    window.draw(*this);
+    window.draw(text);
 }
 
 void Button::setHovered(bool hovered)
 {
     isHovered = hovered;
-    
-    if (isPressed) {
+
+    if (isPressed)
+    {
         setFillColor(pressedColor);
-    } else if (isHovered) {
+    }
+    else if (isHovered)
+    {
         setFillColor(hoverColor);
-    } else {
+    }
+    else
+    {
         setFillColor(normalColor);
     }
 }
@@ -113,15 +122,21 @@ void Button::setHovered(bool hovered)
 void Button::setPressed(bool pressed)
 {
     isPressed = pressed;
-    
-    if (isPressed) {
+
+    if (isPressed)
+    {
         setFillColor(pressedColor);
         // Slight offset for pressed effect
         text.setPosition({text.getPosition().x + 2, text.getPosition().y + 2});
-    } else {
-        if (isHovered) {
+    }
+    else
+    {
+        if (isHovered)
+        {
             setFillColor(hoverColor);
-        } else {
+        }
+        else
+        {
             setFillColor(normalColor);
         }
         updateText(); // Reset text position
@@ -134,12 +149,10 @@ void Button::updateText()
     sf::FloatRect textBounds = text.getLocalBounds();
     sf::FloatRect buttonBounds = getGlobalBounds();
     text.setOrigin({textBounds.size.x / 2.0f, textBounds.size.y / 2.0f + textBounds.position.y});
-    
+
     // Position text at center of button
-    text.setPosition({
-        buttonBounds.position.x + buttonBounds.size.x / 2.0f,
-        buttonBounds.position.y + buttonBounds.size.y / 2.0f
-    });
+    text.setPosition({buttonBounds.position.x + buttonBounds.size.x / 2.0f,
+                      buttonBounds.position.y + buttonBounds.size.y / 2.0f});
 }
 
 bool Button::contains(sf::Vector2f point) const
@@ -166,54 +179,59 @@ void Scoreboard::resetScore()
 void Game::run()
 {
     // Load initial menu music
-    loadBackgroundMusic("../../soundfx/dualofthefates.mp3");
+    loadBackgroundMusic("soundfx/dualofthefates.mp3");
     backgroundMusic.play();
-    
-    while (window.isOpen() && currentState != GameState::QUIT) {
-        if (stateChanged) {
+
+    while (window.isOpen() && currentState != GameState::QUIT)
+    {
+        if (stateChanged)
+        {
             GameState previousState = currentState;
             currentState = nextState;
             stateChanged = false;
-            
-            switch (currentState) {
-                case GameState::MENU:
-                    if (previousState != GameState::MENU) {
-                        loadBackgroundMusic("../../soundfx/dualofthefates.mp3");
-                        backgroundMusic.play();
-                    }
-                    break;
-                case GameState::PLAYING:
-                    loadBackgroundMusic("../../soundfx/magicmamaliga.mp3");
-                    backgroundMusic.play();
-                    food.spawn(player);
-                    break;
-                case GameState::PAUSED:
-                    backgroundMusic.pause();
-                    break;
-                case GameState::GAME_OVER:
-                    backgroundMusic.stop();
-                    checkAndUpdateHighScore();
-                    break;
-            }
-        }
-        
-        // Handle current state
-        switch (currentState) {
+
+            switch (currentState)
+            {
             case GameState::MENU:
-                handleMenuState();
-                break;
-            case GameState::USERNAME_INPUT:
-                handleUsernameInputState();
+                if (previousState != GameState::MENU)
+                {
+                    loadBackgroundMusic("soundfx/dualofthefates.mp3");
+                    backgroundMusic.play();
+                }
                 break;
             case GameState::PLAYING:
-                handlePlayingState();
+                loadBackgroundMusic("soundfx/magicmamaliga.mp3");
+                backgroundMusic.play();
+                food.spawn(player);
                 break;
             case GameState::PAUSED:
-                handlePausedState();
+                backgroundMusic.pause();
                 break;
             case GameState::GAME_OVER:
-                handleGameOverState();
+                backgroundMusic.stop();
+                checkAndUpdateHighScore();
                 break;
+            }
+        }
+
+        // Handle current state
+        switch (currentState)
+        {
+        case GameState::MENU:
+            handleMenuState();
+            break;
+        case GameState::USERNAME_INPUT:
+            handleUsernameInputState();
+            break;
+        case GameState::PLAYING:
+            handlePlayingState();
+            break;
+        case GameState::PAUSED:
+            handlePausedState();
+            break;
+        case GameState::GAME_OVER:
+            handleGameOverState();
+            break;
         }
     }
 }
@@ -241,16 +259,17 @@ bool Game::isGameOver()
     return player.collidedWithBorder() || player.collidedWithSelf();
 }
 
-void Game::loadBackgroundMusic(const std::string& filename)
+void Game::loadBackgroundMusic(const std::string &filename)
 {
     // Stop current music
     backgroundMusic.stop();
-    
-    if (!backgroundMusic.openFromFile(filename)) {
+
+    if (!backgroundMusic.openFromFile(filename))
+    {
         std::cerr << "Error loading music file: " << filename << std::endl;
         return;
     }
-    
+
     backgroundMusic.setVolume(MUSIC_VOLUME);
     backgroundMusic.setLooping(true);
 }
@@ -260,43 +279,58 @@ void Game::loadBackgroundMusic(const std::string& filename)
 void Game::handleMenuState()
 {
     handleMenuInput();
-    
+
     // Update background zoom effect
-    if (zoomingIn) {
+    if (zoomingIn)
+    {
         backgroundZoom += zoomSpeed;
-        if (backgroundZoom >= maxZoom) {
+        if (backgroundZoom >= maxZoom)
+        {
             backgroundZoom = maxZoom;
             zoomingIn = false;
         }
-    } else {
+    }
+    else
+    {
         backgroundZoom -= zoomSpeed;
-        if (backgroundZoom <= minZoom) {
+        if (backgroundZoom <= minZoom)
+        {
             backgroundZoom = minZoom;
             zoomingIn = true;
         }
     }
-    
+
     drawMenu();
 }
 
 void Game::handlePlayingState()
 {
+    // Load soundFX
+    sf::SoundBuffer popBuffer("soundfx/pop.mp3");
+    sf::Sound pop(popBuffer);
+    pop.setVolume(50);
+
     // Handle input including movement
-    while (const std::optional event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             changeState(GameState::QUIT);
             return;
         }
-        
-        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            if (keyPressed->code == sf::Keyboard::Key::Escape) {
+
+        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressed->code == sf::Keyboard::Key::Escape)
+            {
                 changeState(GameState::PAUSED);
                 return;
             }
-            
-            // Add movement controls
+
+            // Movement controls
             const int minFramesBetweenTurns = 2 * framesPerSegment;
-            switch (keyPressed->code) {
+            switch (keyPressed->code)
+            {
             case sf::Keyboard::Key::Up:
                 if (direction != moveDirection::Down && player.framesSinceTurn >= minFramesBetweenTurns)
                     direction = moveDirection::Up;
@@ -316,20 +350,24 @@ void Game::handlePlayingState()
             }
         }
     }
-    
-    if (isGameOver()) {
+
+    if (isGameOver())
+    {
         changeState(GameState::GAME_OVER);
         return;
     }
-    
-    if (player.eat(food)) {
+
+    if (player.eat(food))
+    {
+        pop.play();
         player.spawnTail();
         food.spawn(player);
         scoreboard.increaseScore(10);
     }
-    
+
     // Update player movement
-    switch (direction) {
+    switch (direction)
+    {
     case moveDirection::Up:
         player.moveSnake(moveDirection::Up);
         break;
@@ -343,23 +381,23 @@ void Game::handlePlayingState()
         player.moveSnake(moveDirection::Right);
         break;
     }
-    
+
     player.incrementFramesSinceTurn();
     player.storePosition();
     player.updateTail();
     player.updateCorners();
-    
+
     // Draw everything
     window.clear();
     window.draw(gameBackgroundSprite);
     window.draw(player);
-    
+
     for (const auto &segment : player.tailSegments)
         window.draw(segment);
 
     for (const auto &corner : player.cornerSegments)
         window.draw(corner.shape);
-        
+
     window.draw(food);
     window.draw(scoreboard.text);
     window.display();
@@ -384,42 +422,54 @@ void Game::handleMenuInput()
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePixelPos);
 
-    while (const std::optional event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             changeState(GameState::QUIT);
             return;
         }
 
-        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            if (keyPressed->code == sf::Keyboard::Key::Enter) {
+        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressed->code == sf::Keyboard::Key::Enter)
+            {
                 changeState(GameState::USERNAME_INPUT);
                 return;
             }
         }
 
         // Handle mouse button press
-        if (auto *mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mousePressed->button == sf::Mouse::Button::Left) {
-                if (startButton->contains(mouseWorldPos)) {
+        if (auto *mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+        {
+            if (mousePressed->button == sf::Mouse::Button::Left)
+            {
+                if (startButton->contains(mouseWorldPos))
+                {
                     startButton->setPressed(true);
                 }
-                if (exitButton->contains(mouseWorldPos)) {
+                if (exitButton->contains(mouseWorldPos))
+                {
                     exitButton->setPressed(true);
                 }
             }
         }
-        
+
         // Handle mouse button release
-        if (auto *mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
-            if (mouseReleased->button == sf::Mouse::Button::Left) {
+        if (auto *mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+        {
+            if (mouseReleased->button == sf::Mouse::Button::Left)
+            {
                 startButton->setPressed(false);
                 exitButton->setPressed(false);
-                
-                if (startButton->contains(mouseWorldPos)) {
+
+                if (startButton->contains(mouseWorldPos))
+                {
                     changeState(GameState::USERNAME_INPUT);
                     return;
                 }
-                if (exitButton->contains(mouseWorldPos)) {
+                if (exitButton->contains(mouseWorldPos))
+                {
                     changeState(GameState::QUIT);
                     return;
                 }
@@ -428,11 +478,13 @@ void Game::handleMenuInput()
     }
 
     // Handle button hover effects
-    if (startButton != nullptr) {
+    if (startButton != nullptr)
+    {
         bool startMouseOver = startButton->contains(mouseWorldPos);
         startButton->setHovered(startMouseOver);
     }
-    if (exitButton != nullptr) {
+    if (exitButton != nullptr)
+    {
         bool exitMouseOver = exitButton->contains(mouseWorldPos);
         exitButton->setHovered(exitMouseOver);
     }
@@ -440,16 +492,20 @@ void Game::handleMenuInput()
 
 void Game::handleGameInput()
 {
-    while (const std::optional event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             changeState(GameState::QUIT);
             return;
         }
 
-        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
             const int minFramesBetweenTurns = 2 * framesPerSegment;
 
-            switch (keyPressed->code) {
+            switch (keyPressed->code)
+            {
             case sf::Keyboard::Key::Up:
                 if (direction != moveDirection::Down && player.framesSinceTurn >= minFramesBetweenTurns)
                     direction = moveDirection::Up;
@@ -474,7 +530,8 @@ void Game::handleGameInput()
     }
 
     // Update player movement
-    switch (direction) {
+    switch (direction)
+    {
     case moveDirection::Up:
         player.moveSnake(moveDirection::Up);
         break;
@@ -492,14 +549,18 @@ void Game::handleGameInput()
 
 void Game::handlePauseInput()
 {
-    while (const std::optional event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             changeState(GameState::QUIT);
             return;
         }
 
-        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            switch (keyPressed->code) {
+        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            switch (keyPressed->code)
+            {
             case sf::Keyboard::Key::Escape:
             case sf::Keyboard::Key::P:
                 backgroundMusic.play();
@@ -521,14 +582,18 @@ void Game::handleGameOverInput()
     sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePixelPos);
 
-    while (const std::optional event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             changeState(GameState::QUIT);
             return;
         }
 
-        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            switch (keyPressed->code) {
+        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            switch (keyPressed->code)
+            {
             case sf::Keyboard::Key::R:
                 resetGame();
                 changeState(GameState::PLAYING);
@@ -544,30 +609,38 @@ void Game::handleGameOverInput()
         }
 
         // Handle mouse button press
-        if (auto *mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mousePressed->button == sf::Mouse::Button::Left) {
-                if (restartButton->contains(mouseWorldPos)) {
+        if (auto *mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+        {
+            if (mousePressed->button == sf::Mouse::Button::Left)
+            {
+                if (restartButton->contains(mouseWorldPos))
+                {
                     restartButton->setPressed(true);
                 }
-                if (menuButton->contains(mouseWorldPos)) {
+                if (menuButton->contains(mouseWorldPos))
+                {
                     menuButton->setPressed(true);
                 }
             }
         }
-        
+
         // Handle mouse button release
-        if (auto *mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
-            if (mouseReleased->button == sf::Mouse::Button::Left) {
+        if (auto *mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
+        {
+            if (mouseReleased->button == sf::Mouse::Button::Left)
+            {
                 restartButton->setPressed(false);
                 menuButton->setPressed(false);
-                
-                if (restartButton->contains(mouseWorldPos)) {
+
+                if (restartButton->contains(mouseWorldPos))
+                {
                     resetGame();
                     changeState(GameState::PLAYING);
                     return;
                 }
-                
-                if (menuButton->contains(mouseWorldPos)) {
+
+                if (menuButton->contains(mouseWorldPos))
+                {
                     changeState(GameState::MENU);
                     return;
                 }
@@ -588,21 +661,19 @@ void Game::handleGameOverInput()
 void Game::drawMenu()
 {
     window.clear();
-    
+
     // Apply zoom effect to background
     menuBackgroundSprite.setScale({backgroundZoom, backgroundZoom});
-    
+
     // Center the scaled background
     sf::FloatRect bgBounds = menuBackgroundSprite.getGlobalBounds();
-    menuBackgroundSprite.setPosition({
-        (RESOLUTION_WIDTH - bgBounds.size.x) / 2.0f,
-        (RESOLUTION_HEIGHT - bgBounds.size.y) / 2.0f
-    });
-    
+    menuBackgroundSprite.setPosition({(RESOLUTION_WIDTH - bgBounds.size.x) / 2.0f,
+                                      (RESOLUTION_HEIGHT - bgBounds.size.y) / 2.0f});
+
     window.draw(menuBackgroundSprite);
     startButton->draw(window);
     exitButton->draw(window);
-    
+
     // Add title text
     sf::Text titleText(font, "SNAKE  GAME", 200);
     sf::FloatRect titleBounds = titleText.getLocalBounds();
@@ -612,7 +683,7 @@ void Game::drawMenu()
     titleText.setOutlineThickness(4);
     titleText.setOutlineColor(sf::Color::Black);
     window.draw(titleText);
-    
+
     // Add instruction text
     sf::Text startText(font, "Press   Enter   to   Start   or   Click   the   Button", 40);
     sf::FloatRect startBounds = startText.getLocalBounds();
@@ -622,7 +693,7 @@ void Game::drawMenu()
     startText.setOutlineThickness(2);
     startText.setOutlineColor(sf::Color::Black);
     window.draw(startText);
-    
+
     // Add high score display
     std::string highScoreStr = "High   Score   " + std::to_string(highScore) + "   by   " + highScoreUsername;
     sf::Text highScoreText(font, highScoreStr, 35);
@@ -633,7 +704,7 @@ void Game::drawMenu()
     highScoreText.setOutlineThickness(2);
     highScoreText.setOutlineColor(sf::Color::Black);
     window.draw(highScoreText);
-    
+
     window.display();
 }
 
@@ -661,7 +732,7 @@ void Game::drawPause()
 {
     window.clear();
     window.draw(menuBackgroundSprite);
-    
+
     // PAUSED text
     sf::Text pauseText(font, "PAUSED", 100);
     sf::FloatRect pauseBounds = pauseText.getLocalBounds();
@@ -671,7 +742,7 @@ void Game::drawPause()
     pauseText.setOutlineThickness(2);
     pauseText.setOutlineColor(sf::Color::Black);
     window.draw(pauseText);
-    
+
     // Resume instructions
     sf::Text resumeText(font, "Press   Esc   or   P   to   Resume", 40);
     sf::FloatRect resumeBounds = resumeText.getLocalBounds();
@@ -681,7 +752,7 @@ void Game::drawPause()
     resumeText.setOutlineThickness(2);
     resumeText.setOutlineColor(sf::Color::Black);
     window.draw(resumeText);
-    
+
     // Menu instructions
     sf::Text menuText(font, "Press   M   for   Main   Menu", 40);
     sf::FloatRect menuBounds = menuText.getLocalBounds();
@@ -691,7 +762,7 @@ void Game::drawPause()
     menuText.setOutlineThickness(2);
     menuText.setOutlineColor(sf::Color::Black);
     window.draw(menuText);
-    
+
     // Exit instructions
     sf::Text exitText(font, "Press   Q   to   Exit   Game", 40);
     sf::FloatRect exitBounds = exitText.getLocalBounds();
@@ -701,7 +772,7 @@ void Game::drawPause()
     exitText.setOutlineThickness(2);
     exitText.setOutlineColor(sf::Color::Black);
     window.draw(exitText);
-    
+
     window.display();
 }
 
@@ -709,7 +780,7 @@ void Game::drawGameOver()
 {
     window.clear();
     window.draw(menuBackgroundSprite);
-    
+
     // Draw game over text
     sf::Text gameOverDisplay = gameOverText;
     sf::FloatRect gameOverBounds = gameOverDisplay.getLocalBounds();
@@ -718,7 +789,7 @@ void Game::drawGameOver()
     gameOverDisplay.setOutlineThickness(2);
     gameOverDisplay.setOutlineColor(sf::Color::Black);
     window.draw(gameOverDisplay);
-    
+
     // Update and draw final score
     scoreText = sf::Text(font, "Final  Score  " + std::to_string(scoreboard.getCurrentScore()), 60);
     sf::FloatRect scoreBounds = scoreText.getLocalBounds();
@@ -728,9 +799,10 @@ void Game::drawGameOver()
     scoreText.setOutlineThickness(2);
     scoreText.setOutlineColor(sf::Color::Black);
     window.draw(scoreText);
-    
+
     // Show new high score message if applicable
-    if (isNewHighScore) {
+    if (isNewHighScore)
+    {
         sf::Text newHighScoreText(font, "NEW HIGH SCORE!", 50);
         sf::FloatRect newHighScoreBounds = newHighScoreText.getLocalBounds();
         newHighScoreText.setOrigin({newHighScoreBounds.size.x / 2.0f, newHighScoreBounds.size.y / 2.0f});
@@ -740,17 +812,17 @@ void Game::drawGameOver()
         newHighScoreText.setOutlineColor(sf::Color::Black);
         window.draw(newHighScoreText);
     }
-    
-    // Draw instruction text 
+
+    // Draw instruction text
     sf::Text instructionsDisplay = instructionText;
     sf::FloatRect instructionBounds = instructionsDisplay.getLocalBounds();
     instructionsDisplay.setOrigin({instructionBounds.size.x / 2.0f, instructionBounds.size.y / 2.0f});
     instructionsDisplay.setPosition({RESOLUTION_WIDTH / 2.0f, 750});
     window.draw(instructionsDisplay);
-    
+
     restartButton->draw(window);
     menuButton->draw(window);
-    
+
     window.display();
 }
 
@@ -764,33 +836,45 @@ void Game::handleUsernameInputState()
 
 void Game::handleUsernameInput()
 {
-    while (const std::optional event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+    while (const std::optional event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
             changeState(GameState::QUIT);
             return;
         }
 
-        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-            if (keyPressed->code == sf::Keyboard::Key::Enter) {
-                if (!inputUsername.empty()) {
+        if (auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressed->code == sf::Keyboard::Key::Enter)
+            {
+                if (!inputUsername.empty())
+                {
                     currentUsername = inputUsername;
                     resetGame();
                     changeState(GameState::PLAYING);
                     return;
                 }
-            } else if (keyPressed->code == sf::Keyboard::Key::Escape) {
+            }
+            else if (keyPressed->code == sf::Keyboard::Key::Escape)
+            {
                 changeState(GameState::MENU);
                 return;
-            } else if (keyPressed->code == sf::Keyboard::Key::Backspace) {
-                if (!inputUsername.empty()) {
+            }
+            else if (keyPressed->code == sf::Keyboard::Key::Backspace)
+            {
+                if (!inputUsername.empty())
+                {
                     inputUsername.pop_back();
                 }
             }
         }
 
-        if (auto *textEntered = event->getIf<sf::Event::TextEntered>()) {
+        if (auto *textEntered = event->getIf<sf::Event::TextEntered>())
+        {
             char unicode = static_cast<char>(textEntered->unicode);
-            if (unicode >= 32 && unicode < 127 && inputUsername.length() < 15) { // Printable ASCII characters
+            if (unicode >= 32 && unicode < 127 && inputUsername.length() < 15)
+            { // Printable ASCII characters
                 inputUsername += unicode;
             }
         }
@@ -800,19 +884,17 @@ void Game::handleUsernameInput()
 void Game::drawUsernameInput()
 {
     window.clear();
-    
+
     // Apply zoom effect to background
     menuBackgroundSprite.setScale({backgroundZoom, backgroundZoom});
-    
+
     // Center the scaled background
     sf::FloatRect bgBounds = menuBackgroundSprite.getGlobalBounds();
-    menuBackgroundSprite.setPosition({
-        (RESOLUTION_WIDTH - bgBounds.size.x) / 2.0f,
-        (RESOLUTION_HEIGHT - bgBounds.size.y) / 2.0f
-    });
-    
+    menuBackgroundSprite.setPosition({(RESOLUTION_WIDTH - bgBounds.size.x) / 2.0f,
+                                      (RESOLUTION_HEIGHT - bgBounds.size.y) / 2.0f});
+
     window.draw(menuBackgroundSprite);
-    
+
     // Title text
     sf::Text titleText(font, "Enter   Username", 120);
     sf::FloatRect titleBounds = titleText.getLocalBounds();
@@ -822,7 +904,7 @@ void Game::drawUsernameInput()
     titleText.setOutlineThickness(3);
     titleText.setOutlineColor(sf::Color::Black);
     window.draw(titleText);
-    
+
     // Username input box
     sf::RectangleShape inputBox({600, 80});
     inputBox.setPosition({(RESOLUTION_WIDTH - 600) / 2.0f, 350});
@@ -830,14 +912,14 @@ void Game::drawUsernameInput()
     inputBox.setOutlineThickness(3);
     inputBox.setOutlineColor(sf::Color::Black);
     window.draw(inputBox);
-    
+
     // Username text
     std::string displayText = inputUsername + "_"; // Add cursor
     sf::Text usernameText(font, displayText, 60);
     usernameText.setPosition({(RESOLUTION_WIDTH - 600) / 2.0f + 20, 355});
     usernameText.setFillColor(sf::Color::Black);
     window.draw(usernameText);
-    
+
     // Instructions
     sf::Text instructionText(font, "Type   your   username   and   press   Enter   to   start", 40);
     sf::FloatRect instructionBounds = instructionText.getLocalBounds();
@@ -847,7 +929,7 @@ void Game::drawUsernameInput()
     instructionText.setOutlineThickness(2);
     instructionText.setOutlineColor(sf::Color::Black);
     window.draw(instructionText);
-    
+
     sf::Text escText(font, "Press   Escape   to   go   back", 30);
     sf::FloatRect escBounds = escText.getLocalBounds();
     escText.setOrigin({escBounds.size.x / 2.0f, escBounds.size.y / 2.0f});
@@ -856,22 +938,25 @@ void Game::drawUsernameInput()
     escText.setOutlineThickness(2);
     escText.setOutlineColor(sf::Color::Black);
     window.draw(escText);
-    
+
     window.display();
 }
 
 void Game::loadHighScore()
 {
     std::ifstream file("highscore.txt");
-    if (file.is_open()) {
+    if (file.is_open())
+    {
         file >> highScore;
         std::getline(file, highScoreUsername);
         // Remove leading whitespace from username
         size_t start = highScoreUsername.find_first_not_of(" \t");
-        if (start != std::string::npos) {
+        if (start != std::string::npos)
+        {
             highScoreUsername = highScoreUsername.substr(start);
         }
-        if (highScoreUsername.empty()) {
+        if (highScoreUsername.empty())
+        {
             highScoreUsername = "Unknown";
         }
         file.close();
@@ -881,7 +966,8 @@ void Game::loadHighScore()
 void Game::saveHighScore()
 {
     std::ofstream file("highscore.txt");
-    if (file.is_open()) {
+    if (file.is_open())
+    {
         file << highScore << " " << highScoreUsername;
         file.close();
     }
@@ -890,12 +976,15 @@ void Game::saveHighScore()
 void Game::checkAndUpdateHighScore()
 {
     int currentScore = scoreboard.getCurrentScore();
-    if (currentScore > highScore) {
+    if (currentScore > highScore)
+    {
         highScore = currentScore;
         highScoreUsername = currentUsername;
         isNewHighScore = true;
         saveHighScore();
-    } else {
+    }
+    else
+    {
         isNewHighScore = false;
     }
 }
