@@ -1,6 +1,8 @@
 ## Quick start
 
-### Command line
+This is compiled using SFML's CMake template, for an easy build process. This project uses SFML 3.0.2, which still needs to be downloaded and installed.
+
+### Template instructions
 
 1. Install [Git](https://git-scm.com/downloads) and [CMake](https://cmake.org/download/). Use your system's package manager if available.
 2. Follow [GitHub's instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) for how to use their project template feature to create your own project. If you don't want to use GitHub, see the section below.
